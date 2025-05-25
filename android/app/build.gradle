@@ -1,0 +1,44 @@
+// App build.gradle (di dalam folder 'app')
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin" // Plugin Flutter harus ditaruh di sini setelah plugin lainnya
+}
+
+android {
+    namespace = "com.example.project_skripsi" // Ganti dengan namespace yang sesuai
+    compileSdkVersion flutter.compileSdkVersion
+    ndkVersion flutter.ndkVersion
+
+    defaultConfig {
+        applicationId "com.example.project_skripsi" // Ganti dengan applicationId yang sesuai
+        minSdkVersion flutter.minSdkVersion
+        targetSdkVersion flutter.targetSdkVersion
+        versionCode flutter.versionCode
+        versionName flutter.versionName
+        multiDexEnabled true // Jika menggunakan multidex
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.debug // Sesuaikan dengan konfigurasi signing Anda
+        }
+    }
+}
+
+dependencies {
+    implementation 'com.android.support:multidex:1.0.3' // Jika diperlukan untuk multidex
+}
+
+flutter {
+    source '../..' // Path ke folder flutter (root dari proyek Flutter)
+}
