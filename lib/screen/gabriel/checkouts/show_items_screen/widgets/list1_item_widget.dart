@@ -13,11 +13,13 @@ class List1ItemWidget extends StatefulWidget {
     Key? key,
     this.data,
     this.color,
+    this.companCode,
     required this.onQuantityChanged, // Callback to notify quantity changes
   }) : super(key: key);
 
   final bool? color;
   final Map<String, dynamic>? data;
+  final String? companCode;
   final void Function(dynamic updatedData) onQuantityChanged;
 
   @override
@@ -46,7 +48,8 @@ class _List1ItemWidgetState extends State<List1ItemWidget> {
   void checkdata() async {
     if (await LocalData.containsKey('cart')) {
       final datas = jsonDecode(await LocalData.getData('cart'));
-      final compan = await LocalData.getData('compan_code');
+      final compan =
+          widget.companCode ?? await LocalData.getData('compan_code');
       if (compan != 'semua') {
         for (dynamic data in datas[compan]) {
           if (data == widget.data!['brg_id'].toString()) {
@@ -86,7 +89,7 @@ class _List1ItemWidgetState extends State<List1ItemWidget> {
   }
 
   void changeLocalData({bool addData = true, int? count}) async {
-    final compan = await LocalData.getData('compan_code');
+    final compan = widget.companCode ?? await LocalData.getData('compan_code');
     var cart = jsonDecode(await LocalData.getData('cart'));
     List<String> cartData = [];
 
@@ -208,7 +211,7 @@ class _List1ItemWidgetState extends State<List1ItemWidget> {
                 color: Colors.white,
                 child: CustomImageView(
                   imagePath:
-                      "${API.BASE_URL}/images/gambar_brg/${widget.data!['url']}",
+                      "${API.BASE_URL}/img/gambar_produk/${widget.data!['url']}",
                   height: 225.v,
                   alignment: Alignment.center,
                   fit: BoxFit.fill,
@@ -222,7 +225,7 @@ class _List1ItemWidgetState extends State<List1ItemWidget> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.data!['brg_name'],
+                    widget.data!['nama'],
                     style: const TextStyle(
                         color: Color.fromARGB(255, 6, 136, 112),
                         fontWeight: FontWeight.bold,
@@ -246,7 +249,7 @@ class _List1ItemWidgetState extends State<List1ItemWidget> {
                             textAlign: TextAlign.start,
                           ),
                           Text(
-                            "Price: Rp. ${currencyFormatter.format(widget.data!['price'])}",
+                            "Price: Rp. ${currencyFormatter.format(widget.data!['harga'])}",
                             style: TextStyle(
                                 fontSize: 14,
                                 color: widget.color!

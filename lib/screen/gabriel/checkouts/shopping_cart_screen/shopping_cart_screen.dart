@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:project_skripsi/screen/navbar_menu/alamat_screen.dart';
 import 'package:project_skripsi/screen/ocr_ktp/view/home.dart';
 import 'package:get/get.dart';
 
@@ -22,29 +23,31 @@ class ShoppingCartScreen extends StatefulWidget {
 class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
   late num totalQuantityFinal = 0;
   late num totalPriceFinal = 0;
-  late int point;
   String namaCabang = '';
   bool isChecked = false;
-
+  late List<Alamat> alamatList;
+  Alamat? selectedAlamat;
+  late num deliveryPrice = 0;
   @override
   void initState() {
-    getPoint();
-    getCompanName();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadInitialData();
+    });
     super.initState();
   }
 
-  void getPoint() async {
-    final points = await LocalData.getData('point');
-    setState(() {
-      point = int.parse(points);
-    });
+  Future<void> loadInitialData() async {
+    DialogConstant.loading(context, 'Loading...');
+    await getCompanName();
+    await fetchAlamatList();
+    Get.back();
   }
 
-  void getCompanName() async {
+  Future<void> getCompanName() async {
     final compan = await LocalData.getData('compan_code');
     try {
       final response =
-          await http.get(Uri.parse('${API.BASE_URL}/get_compan.php'));
+          await http.get(Uri.parse('${API.BASE_URL}/api/toko/get_compan'));
       if (response.statusCode == 200) {
         // Mengonversi JSON response menjadi List<Map<String, dynamic>>
         List<dynamic> jsonData = json.decode(response.body);
@@ -57,6 +60,24 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
       }
     } catch (e) {
       throw Exception('Failed to load data: $e');
+    }
+  }
+
+  Future<void> fetchAlamatList() async {
+    final username = await LocalData.getData('user');
+    final response = await http.get(
+        Uri.parse('${API.BASE_URL}/api/toko/getAlamat?username=$username'));
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      setState(() {
+        alamatList = data.map((e) => Alamat.fromJson(e)).toList();
+        if (alamatList.isNotEmpty) {
+          selectedAlamat = alamatList.firstWhere((a) => a.isPrimary,
+              orElse: () => alamatList.first);
+        }
+      });
+    } else {
+      alamatList = [];
     }
   }
 
@@ -73,8 +94,11 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
               onPressed: () {
                 showAreYouSureDialog(
                     context,
-                    () =>
-                        submitItems(widget.items, totalPriceFinal, isChecked));
+                    () => submitItems(
+                        widget.items,
+                        totalPriceFinal + deliveryPrice,
+                        isChecked,
+                        selectedAlamat!));
               },
               icon: Icon(
                 Icons.check,
@@ -87,6 +111,11 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
         padding: EdgeInsets.symmetric(horizontal: 16.v, vertical: 10.v),
         child: Column(
           children: [
+            if (isChecked)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: buildAlamatDropdown(),
+              ),
             Padding(
               padding: EdgeInsets.symmetric(vertical: 10.adaptSize),
               child: Text(
@@ -109,51 +138,111 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
     );
   }
 
-  void submitItems(items, totalPriceFinal, isCheked) async {
+  Widget buildAlamatDropdown() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<Alamat>(
+          value: selectedAlamat,
+          isExpanded: true,
+          icon: const Icon(Icons.arrow_drop_down),
+          style: const TextStyle(color: Colors.black, fontSize: 14),
+          onChanged: (Alamat? newValue) {
+            setState(() {
+              selectedAlamat = newValue!;
+            });
+          },
+          items: alamatList.map((alamat) {
+            return DropdownMenuItem<Alamat>(
+              value: alamat,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      alamat.label,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Expanded(
+                    child: Text(
+                      alamat.alamat,
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      "${alamat.kota}, ${alamat.provinsi}, ${alamat.kodePos}",
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ),
+                  const Divider(height: 10),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  void submitItems(
+      items, num totalPriceFinal, bool isCheked, Alamat alamat) async {
     if (items.toString().isNotEmpty) {
       DialogConstant.loading(context, 'Transaction on Process...');
 
-      Map<String, dynamic> postTransaction = {
-        'total_amount': totalPriceFinal,
-        'is_delivery': isCheked
-      };
-      if (await LocalData.containsKey('detailKTP')) {
-        ShoppingCartController().postTransactions(
-            context: context,
-            callback: (result, error) {
-              if (result != null && result['error'] != true) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    backgroundColor: const Color.fromARGB(88, 0, 0, 0),
-                    content: Row(
-                      children: [
-                        Icon(
-                          Icons.check,
-                          color: Colors.red,
-                        ),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'Transaction Success!!!',
-                            style: TextStyle(
-                              color: Colors.white,
-                            ),
+      ShoppingCartController().postTransactions(
+          totalAmount: totalPriceFinal,
+          alamat: alamat.alamat,
+          isDelivery: isCheked,
+          context: context,
+          callback: (result, error) {
+            if (result != null && result['error'] != true) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  backgroundColor: const Color.fromARGB(88, 0, 0, 0),
+                  content: Row(
+                    children: [
+                      Icon(
+                        Icons.check,
+                        color: Colors.red,
+                      ),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Transaction Success!!!',
+                          style: TextStyle(
+                            color: Colors.white,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                );
-              } else {
-                DialogConstant.alert(error.toString());
-              }
-              ;
-            },
-            postTransaction: postTransaction,
-            postTransactionDetail: items);
-      } else {
-        Get.to(KtpOCR(postTransaction: postTransaction, postDetail: items));
-      }
+                ),
+              );
+            } else {
+              DialogConstant.alert(error.toString());
+            }
+            ;
+          },
+          postTransactionDetail: items);
     }
   }
 
@@ -215,8 +304,7 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
                     Text('Total Price:',
                         style: CustomTextStyle.titleMediumBlack900),
                     Text(
-                      currencyFormatter.format(
-                          isChecked ? totalPriceFinal * 1.1 : totalPriceFinal),
+                      currencyFormatter.format(totalPriceFinal + deliveryPrice),
                       style: CustomTextStyle.titleMediumBlack900,
                     ),
                   ],
@@ -225,18 +313,6 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
             ),
           ),
         ),
-
-        // Card(
-        //   margin: const EdgeInsets.symmetric(vertical: 8.0),
-        //   child: Padding(
-        //     padding: const EdgeInsets.all(12.0),
-        //     child: Column(
-        //       children: [
-
-        //       ],
-        //     ),
-        //   ),
-        // ),
       ],
     );
   }
@@ -256,12 +332,12 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
             item['quantity_selected'] > 0) // Filter where quantity > 0
         .map((item) {
       return {
-        'image': "${API.BASE_URL}/images/gambar_brg/${item['url']}",
-        'product': item['brg_name'],
-        'product description': item['brg_deskripsi'],
+        'image': "${API.BASE_URL}/img/gambar_produk/${item['url']}",
+        'product': item['nama'],
+        'product description': item['deskripsi'],
         'quantity': item['quantity_selected'],
-        'price': item['price'],
-        'total price': item['price'] * item['quantity_selected']
+        'price': item['harga'],
+        'total price': item['harga'] * item['quantity_selected']
       };
     }).toList();
 
@@ -271,6 +347,15 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
           // Update total quantities and prices in setState
           totalQuantityFinal += product['quantity'];
           totalPriceFinal += product['total price'];
+          if (isChecked) {
+            if (deliveryPrice + (product['total price'] * .1) < 20000) {
+              deliveryPrice += (product['total price'] * .1);
+            } else {
+              deliveryPrice = 20000;
+            }
+          } else {
+            deliveryPrice = 0;
+          }
         });
 
         // Return product card widget

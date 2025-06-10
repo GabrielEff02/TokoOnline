@@ -28,7 +28,7 @@ class _AddressListScreenState extends State<AddressListScreen> {
     selectedAddressID = int.tryParse(addressData) ?? 0;
 
     await API.basePost(
-      "/address.php",
+      "/api/toko/get_address",
       {"username": await LocalData.getData("user")},
       {'Content-Type': 'application/json'},
       true,
@@ -74,7 +74,7 @@ class _AddressListScreenState extends State<AddressListScreen> {
   }
 
   void _addAddress() {
-    // showDialog(
+    // showDialog(  11`
     //   context: context,
     //   builder: (context) {
     //     return AlertDialog(

@@ -1,19 +1,21 @@
+import 'package:http/http.dart';
 import 'package:project_skripsi/NavBar.dart';
 import 'package:project_skripsi/api/notification_api.dart';
+import 'package:project_skripsi/controller/auth_controller.dart';
 import 'package:project_skripsi/screen/auth/login_screen.dart';
 import 'package:project_skripsi/screen/auth/splash_screen.dart';
 import 'package:project_skripsi/screen/gabriel/core/app_export.dart';
 import 'package:project_skripsi/screen/gabriel/notifications/notification_screen.dart';
-import 'package:get/get.dart';
 import 'package:project_skripsi/screen/home/view/landing_screen.dart';
 import 'package:project_skripsi/screen/home/view/search_product_screen.dart';
 import 'package:project_skripsi/screen/home/view/wheel_fortune.dart';
+import 'package:project_skripsi/screen/srg/verify_phone_screen.dart';
 import 'package:project_skripsi/widget/material/button.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class LandingHome extends StatefulWidget {
   const LandingHome({Key? key}) : super(key: key);
-
+  static bool wait = false;
   @override
   State<LandingHome> createState() => _LandingHomeState();
 }
@@ -37,6 +39,7 @@ class _LandingHomeState extends State<LandingHome>
 
   void getLoggedIn() async {
     final data = await LocalData.getDataBool('isLoggedIn');
+
     setState(() {
       isLoggedIn = data;
       if (isLoggedIn) {
@@ -131,6 +134,16 @@ class _LandingHomeState extends State<LandingHome>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadInitialData();
+    });
+  }
+
+  Future<void> loadInitialData() async {
+    setState(() {
+      LandingHome.wait = true;
+    });
+    DialogConstant.loading(context, 'Loading...');
     getLoggedIn();
     _controller = AnimationController(
       vsync: this,
@@ -151,6 +164,10 @@ class _LandingHomeState extends State<LandingHome>
     if (NotificationApi.notificationId != 0) {
       Get.to(NotificationScreen());
     }
+    Get.back();
+    setState(() {
+      LandingHome.wait = false;
+    });
   }
 
   void _navigateToPage(int pageIndex) {

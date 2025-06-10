@@ -3,6 +3,7 @@ import 'package:project_skripsi/screen/gabriel/core/app_export.dart';
 import 'package:project_skripsi/screen/gabriel/request_item/request_history_screen/request_history_screen.dart';
 import 'package:project_skripsi/screen/home/view/edit_profile_screen.dart';
 import 'package:project_skripsi/screen/navbar_menu/about_us_screen.dart';
+import 'package:project_skripsi/screen/navbar_menu/alamat_screen.dart';
 import 'package:project_skripsi/screen/navbar_menu/history_screen.dart';
 import 'package:project_skripsi/screen/navbar_menu/others_screen.dart';
 import 'package:project_skripsi/screen/navbar_menu/contact_screen.dart';
@@ -147,6 +148,11 @@ class NavBar extends StatelessWidget {
                     leading: Icon(Icons.person_add),
                     title: Text('Complete your details'),
                     onTap: () => Get.to(() => KtpOCR()),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.house),
+                    title: Text('Alamat Pengiriman'),
+                    onTap: () => Get.to(() => AlamatScreen()),
                   ),
                 ],
               );

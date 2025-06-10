@@ -66,7 +66,7 @@ class _ShowItemsPointScreenState extends State<ShowItemsPointScreen> {
   Future<void> getCompan() async {
     try {
       final response =
-          await http.get(Uri.parse('${API.BASE_URL}/get_compan.php'));
+          await http.get(Uri.parse('${API.BASE_URL}/api/toko/get_compan'));
 
       if (response.statusCode == 200) {
         // Mengonversi JSON response menjadi List<Map<String, dynamic>>
@@ -185,7 +185,7 @@ class _ShowItemsPointScreenState extends State<ShowItemsPointScreen> {
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text("Hello $name!!!", style: CustomTextStyle.titleSmallBlack900),
             Text(
-              'Points!!: ${currencyFormatter.format(point)}',
+              'Points: ${currencyFormatter.format(point)}',
               style: CustomTextStyle.titleSmallBlack900,
             )
           ]),

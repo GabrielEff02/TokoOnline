@@ -1,10 +1,6 @@
-import 'package:project_skripsi/api/api.dart';
-import 'package:project_skripsi/utils/local_data.dart';
+import '../../../screen/gabriel/core/app_export.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'dart:math' as math;
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class SpiningWheel extends StatefulWidget {
   const SpiningWheel({super.key});
@@ -52,51 +48,46 @@ class _SpiningWheel extends State<SpiningWheel>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadInitialData();
+    });
+  }
 
-    // Fetch chance from LocalData
-    _getIsLoggedIn();
-    _getChance();
+  Future<void> loadInitialData() async {
+    DialogConstant.loading(context, 'Loading...');
 
-    // Generate sector radians / fill the list
+    await _getIsLoggedIn();
+    await _getChance();
+
     generateSectorRadians();
 
-    // Animation controller
     controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 3600), // 3.6 sec
     );
 
-    // The tween
     Tween<double> tween = Tween<double>(begin: 0, end: 1);
 
-    // The curve behavior
     CurvedAnimation curve = CurvedAnimation(
       parent: controller,
       curve: Curves.decelerate,
     );
 
-    // Animation tween
     animation = tween.animate(curve);
 
-    // Rebuild the screen as animation continues
     controller.addListener(() {
-      // Only when animation complete
       if (controller.isCompleted) {
-        // Rebuild
         setState(() {
-          // Record stats
-          // Update status bool
           spinning = false;
         });
-        // Show pop-up with the earned value after 4 seconds
         earnedValue =
             (sectors[sectors.length - (randomSectorIndex + 1)]).toInt();
         _showWinDialog();
       }
     });
+    Get.back();
   }
 
-  // Dispose controller after use
   @override
   void dispose() {
     super.dispose();
@@ -323,11 +314,10 @@ class _SpiningWheel extends State<SpiningWheel>
           await LocalData.getData('user'); // Replace with actual user ID
       int points = earnedValue; // Calculate points to send to the server
       // Define the URL for the PHP script
-      final String url = '${API.BASE_URL}'; // Replace with your actual URL
 
       // Send data to the server
       final response = await API.basePost(
-          '/earn_point.php',
+          '/api/toko/earn_point',
           {
             'username': username,
             'points': points,

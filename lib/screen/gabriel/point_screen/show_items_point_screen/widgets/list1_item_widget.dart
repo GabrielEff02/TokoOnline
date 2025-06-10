@@ -187,7 +187,7 @@ class _List1ItemWidgetState extends State<List1ItemWidget> {
                 color: Colors.white,
                 child: CustomImageView(
                   imagePath:
-                      "${API.BASE_URL}/images/${widget.data!['image_url']}",
+                      "${API.BASE_URL}/img/gambar_produk_tukar_poin/${widget.data!['image_url']}",
                   height: 225.v,
                   alignment: Alignment.center,
                   fit: BoxFit.fill,

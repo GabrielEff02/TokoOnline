@@ -43,16 +43,7 @@ class DialogConstant {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    'Oops!',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
+
                   AnimatedOpacity(
                     opacity: 1.0,
                     duration: Duration(milliseconds: 500),
@@ -142,95 +133,182 @@ class DialogConstant {
     );
   }
 
-  static showConfirmDialog(String title, String message, void callback()) {
-    showDialog(
-        context: Get.context!,
-        barrierDismissible: true,
-        builder: (BuildContext context) {
-          return Dialog(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                SizedBox(
-                  height: 16,
-                ),
-//                Visibility(
-//                  visible: title != "",
-//                  child: Padding(
-//                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-//                    child: AppText.bold(
-//                      title,
-//                      isCentered: true,
-//                      size: 16,
-//                    ),
-//                  ),
-//                ),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  child: Text(
-                    message,
-                    style: TextConstant.regular.copyWith(fontSize: 14),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                SizedBox(
-                  height: 8,
-                ),
-                Divider(
-                  height: 0,
-                ),
-                Row(
-//                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Expanded(
-                        child: GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        child: Text(
-                          "Tidak",
-                          textAlign: TextAlign.center,
-                          style: TextConstant.regular
-                              .copyWith(color: Colors.black87),
-                        ),
-                      ),
-                    )),
-                    Container(
-                      width: 0.5,
-                      height: 40,
-                      color: Colors.grey.shade300,
+// Alternatif dengan animasi yang lebih smooth
+  static showConfirmDialog(
+      String title, String message, VoidCallback callback) {
+    showGeneralDialog(
+      context: Get.context!,
+      barrierDismissible: true,
+      barrierLabel: '',
+      barrierColor: Colors.black54,
+      transitionDuration: Duration(milliseconds: 300),
+      pageBuilder: (context, animation1, animation2) {
+        return Container();
+      },
+      transitionBuilder: (context, animation1, animation2, child) {
+        return Transform.scale(
+          scale: animation1.value,
+          child: Opacity(
+            opacity: animation1.value,
+            child: Dialog(
+              elevation: 20,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.85,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 20,
+                      offset: Offset(0, 10),
                     ),
-                    Expanded(
-                        child: GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        callback();
-                      },
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        child: Text(
-                          "Ya",
-                          textAlign: TextAlign.center,
-                          style: TextConstant.regular
-                              .copyWith(color: Colors.blue, fontSize: 12),
-                        ),
-                      ),
-                    )),
                   ],
                 ),
-                SizedBox(
-                  height: 4,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header dengan gradient
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.blue.shade400,
+                            Colors.blue.shade600,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 70,
+                            height: 70,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.error_outline,
+                              size: 35,
+                              color: Colors.white,
+                            ),
+                          ),
+                          if (title.isNotEmpty) ...[
+                            SizedBox(height: 16),
+                            Text(
+                              title,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+
+                    // Content
+                    Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Text(
+                        message,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade700,
+                          height: 1.5,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+
+                    // Action buttons dengan style modern
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(24, 0, 24, 24),
+                      child: Row(
+                        children: [
+                          // Tombol Tidak
+                          Expanded(
+                            child: Container(
+                              height: 48,
+                              margin: EdgeInsets.only(right: 8),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.grey.shade100,
+                                  foregroundColor: Colors.grey.shade700,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    side: BorderSide(
+                                      color: Colors.grey.shade300,
+                                    ),
+                                  ),
+                                ),
+                                child: Text(
+                                  "Tidak",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          // Tombol Ya
+                          Expanded(
+                            child: Container(
+                              height: 48,
+                              margin: EdgeInsets.only(left: 8),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  callback();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue.shade600,
+                                  foregroundColor: Colors.white,
+                                  elevation: 2,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: Text(
+                                  "Ya",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          );
-        });
+          ),
+        );
+      },
+    );
   }
 
   static alertMultipleOption(

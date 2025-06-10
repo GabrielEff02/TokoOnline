@@ -109,7 +109,7 @@ class _CarouselWidgetState extends State<CarouselWidget> {
                       itemBuilder: (context, index) {
                         return CachedNetworkImage(
                             imageUrl:
-                                "${API.BASE_URL}/images/${carouselImages[index]}",
+                                "${API.BASE_URL}/img/carousel/${carouselImages[index]}",
                             fit: BoxFit.fill,
                             placeholder: (context, url) => Image.asset(
                                 "assets/images/image_not_found.png"),

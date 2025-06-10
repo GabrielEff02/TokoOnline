@@ -80,17 +80,15 @@ class _KtpOCRState extends State<KtpOCR> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         DialogConstant.loading(context, 'Loading...');
       });
-
-      if (await LocalData.containsKey('detailKTP')) {
+      var detailKTP = jsonDecode(await LocalData.getData('detailKTP'));
+      if (detailKTP != null && detailKTP.isNotEmpty) {
         ever(provinceController.provinces, (_) async {
           if (provinceController.provinces.isNotEmpty) {
             await fillData();
-            Get.back();
           }
         });
-      } else {
-        Get.back();
       }
+      Get.back();
     }
   }
 
@@ -99,8 +97,6 @@ class _KtpOCRState extends State<KtpOCR> {
     var selectedProvince;
     var selectedCity;
     var selectedKecamatan;
-    List<String> parts = data['tanggal_lahir'].split("-");
-    data['tanggal_lahir'] = "${parts[2]}-${parts[1]}-${parts[0]}";
 
     // province
     for (ProvinsiElement province in provinceController.provinces) {
@@ -123,7 +119,6 @@ class _KtpOCRState extends State<KtpOCR> {
       }
     }
     await kelurahanControl.fetchKelurahanModel(selectedKecamatan.id);
-
     setState(() {
       nikController.text = data['nik'];
       nameController.text = data['nama'];
@@ -346,7 +341,7 @@ class _KtpOCRState extends State<KtpOCR> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: const Text(
-          'OCR KTP',
+          'Isi Detail Anda',
           style: TextStyle(color: Colors.black),
         ),
       ),
@@ -505,7 +500,7 @@ class _KtpOCRState extends State<KtpOCR> {
     DialogConstant.loading(context, 'Loading...');
     listController['username'] = await LocalData.getData('user');
     API.basePost(
-      "/input_ktp.php",
+      "/api/toko/input_ktp",
       listController,
       {'Content-Type': 'application/json'},
       true,
@@ -520,10 +515,6 @@ class _KtpOCRState extends State<KtpOCR> {
               LocalData.saveData('full_name', listController['nama']);
             },
           );
-
-          widget.isCheckout
-              ? Get.to(ShowItemsPointScreen())
-              : Get.offAll(LandingHome());
           Get.snackbar('Success', 'Profile updated successfully!',
               colorText: Colors.white,
               icon: const Icon(
@@ -533,6 +524,9 @@ class _KtpOCRState extends State<KtpOCR> {
               padding: const EdgeInsets.only(top: 10, bottom: 10),
               backgroundColor: const Color.fromARGB(83, 0, 0, 0),
               snackPosition: SnackPosition.BOTTOM);
+          widget.isCheckout
+              ? Get.to(ShowItemsPointScreen())
+              : Get.offAll(LandingHome());
         } else {
           Navigator.pop(context);
           DialogConstant.alert(result['message']);

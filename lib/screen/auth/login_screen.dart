@@ -27,7 +27,6 @@ class _LoginScreenState extends State<LoginScreen> {
   AuthController logincontroller = AuthController();
   @override
   void initState() {
-    SplashScreen.getSplashData();
     alreadyLogIn();
     super.initState();
   }

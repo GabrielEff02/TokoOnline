@@ -25,6 +25,7 @@ class _ItemScreenState extends State<ItemScreen> {
     final checkingCompan = await LocalData.containsKey('compan_code');
     setState(() {
       checkCompan = checkingCompan;
+      print(checkCompan);
     });
   }
 
@@ -33,6 +34,7 @@ class _ItemScreenState extends State<ItemScreen> {
     super.initState();
     isLoggedIn();
     checkingCompan();
+    print(widget.data);
   }
 
   void isLoggedIn() async {
@@ -119,8 +121,8 @@ class _ItemScreenState extends State<ItemScreen> {
                       borderRadius: BorderRadius.circular(30),
                       child: Image.network(
                         widget.isPoint
-                            ? '${API.BASE_URL}/images/${widget.data['image_url']}'
-                            : "${API.BASE_URL}/images/gambar_brg/${widget.data['url']}",
+                            ? '${API.BASE_URL}/img/gambar_produk_tukar_poin/${widget.data['image_url']}'
+                            : "${API.BASE_URL}/img/gambar_produk/${widget.data['url']}",
                         height: 250,
                         fit: BoxFit.cover,
                       ),
@@ -159,7 +161,7 @@ class _ItemScreenState extends State<ItemScreen> {
                       Text(
                         (widget.isPoint
                                 ? widget.data['product_name']
-                                : widget.data['brg_name']) ??
+                                : widget.data['nama']) ??
                             'Unknown Product',
                         style: TextStyle(
                           fontSize: 22,
@@ -172,7 +174,9 @@ class _ItemScreenState extends State<ItemScreen> {
                       Row(
                         children: [
                           Text(
-                            'Rp. ${widget.data['price'] is int ? currencyFormatter.format(widget.data['price'] ?? 0) : currencyFormatter.format(int.tryParse(widget.data['price']) ?? 0)}',
+                            widget.isPoint
+                                ? '${widget.data['price'] is int ? currencyFormatter.format(widget.data['price'] ?? 0) : currencyFormatter.format(int.tryParse(widget.data['price']) ?? 0)}'
+                                : 'Rp. ${widget.data['harga'] is int ? currencyFormatter.format(widget.data['harga'] ?? 0) : currencyFormatter.format(int.tryParse(widget.data['harga']) ?? 0)}/${widget.data['satuan']}',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
@@ -188,7 +192,7 @@ class _ItemScreenState extends State<ItemScreen> {
                           Icon(Icons.inventory, color: Colors.black54),
                           const SizedBox(width: 5),
                           Text(
-                            'Quantity: ${(widget.data['quantity'] == 0) ? 'Habis' : widget.data['quantity'] ?? 0}',
+                            'Quantity: ${(widget.data['quantity'] == 0) ? 'Habis' : widget.data['quantity'] ?? 0} ${widget.isPoint ? '' : widget.data['satuan']}',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
@@ -202,7 +206,7 @@ class _ItemScreenState extends State<ItemScreen> {
                       Text(
                         (widget.isPoint
                                 ? widget.data['product_description']
-                                : widget.data['brg_deskripsi']) ??
+                                : widget.data['deskripsi']) ??
                             'No description available.',
                         style: TextStyle(
                           fontSize: 14,
@@ -301,7 +305,7 @@ class _ItemScreenState extends State<ItemScreen> {
                     ? _bukaModalStok(widget.data['quantity'],
                         widget.data['product_name'], widget.data['price'])
                     : _bukaModalStok(widget.data['quantity'],
-                        widget.data['brg_name'], widget.data['price']);
+                        widget.data['nama'], widget.data['harga']);
               },
               backgroundColor: Colors.deepPurple,
               child: Icon(Icons.shopping_cart, color: Colors.white),
@@ -314,8 +318,8 @@ class _ItemScreenState extends State<ItemScreen> {
   Future<List<Map<String, dynamic>>> getStockDetail() async {
     try {
       final response = await http.get(Uri.parse(widget.isPoint
-          ? '${API.BASE_URL}/get_stockPointDetail.php?product_id=${widget.data['product_id']}'
-          : '${API.BASE_URL}/get_stockDetail.php?product_id=${widget.data['brg_id']}'));
+          ? '${API.BASE_URL}/api/toko/get_stockPointDetail?product_id=${widget.data['product_id']}'
+          : '${API.BASE_URL}/api/toko/get_stockDetail?product_id=${widget.data['brg_id']}'));
 
       if (response.statusCode == 200) {
         // Mengonversi JSON response menjadi List<Map<String, dynamic>>

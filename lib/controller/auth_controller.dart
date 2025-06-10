@@ -67,7 +67,7 @@ class AuthController extends GetxController {
         callback!(null, 'Request timed out');
       }
     });
-    API.basePost('/login.php', post, header, true, (result, error) {
+    API.basePost('/api/toko/login', post, header, true, (result, error) {
       if (!isCompleted) {
         isCompleted = true;
 
@@ -82,21 +82,24 @@ class AuthController extends GetxController {
             List dataUser = result['data'];
             if (dataUser.length > 1) {
               LocalData.saveData('detailKTP', jsonEncode(dataUser[1]));
-              LocalData.saveData('full_name', dataUser[1]['nama']);
             }
-            LocalData.saveDataBool('isLoggedIn', true);
+            LocalData.saveData('full_name', dataUser[0]['name']);
             LocalData.saveData('user', dataUser[0]['username'] ?? "");
             LocalData.saveData('kodec', dataUser[0]['kodec'] ?? "");
-            LocalData.saveData('max_point', dataUser[0]['max_point'] ?? "");
+            LocalData.saveData(
+                'max_point', dataUser[0]['max_point'].toString() ?? "");
             LocalData.saveData('loginDate', DateTime.now().toString());
             LocalData.saveData('password', post['password'] ?? "");
             LocalData.saveData('email', dataUser[0]['email'] ?? "");
-            LocalData.saveData('address', dataUser[0]['default_address'] ?? "");
-            LocalData.saveData('phone', dataUser[0]['phone'] ?? "");
-            LocalData.saveData('point', dataUser[0]['point'] ?? "");
-            LocalData.saveData('chance', dataUser[0]['spin_chance'] ?? "");
+            LocalData.saveData(
+                'address', dataUser[0]['default_address'].toString() ?? "");
+            LocalData.saveData('phone', dataUser[0]['phone'].toString() ?? "");
+            LocalData.saveData('point', dataUser[0]['point'].toString() ?? "");
+            LocalData.saveData(
+                'chance', dataUser[0]['spin_chance'].toString() ?? "");
             LocalData.saveData(
                 'profile_picture', dataUser[0]['profile_picture'] ?? "");
+            LocalData.saveDataBool('isLoggedIn', true);
 
             LocalData.removeData('compan_code');
 
@@ -129,6 +132,8 @@ class AuthController extends GetxController {
       DialogConstant.alert('Nomor Telephone tidak boleh kosong!');
     } else if (edtEmail.text.isEmpty) {
       DialogConstant.alert('Email tidak boleh kosong!');
+    } else if (edtNama.text.isEmpty) {
+      DialogConstant.alert('Nama tidak boleh kosong!');
     } else if (edtPass.text.isEmpty) {
       DialogConstant.alert('Password tidak boleh kosong!');
     } else if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$')
@@ -158,10 +163,11 @@ class AuthController extends GetxController {
     post['email'] = edtEmail.text;
     post['password'] = edtPass.text;
     post['phone'] = edtPhone.text;
+    post['nama'] = edtNama.text;
 
     DialogConstant.loading(context!, 'Loading...');
 
-    API.basePost('/register.php', post, header, true, (result, error) {
+    API.basePost('/api/toko/register', post, header, true, (result, error) {
       Get.back();
       if (error != null) {
         callback!(null, error);
@@ -194,7 +200,7 @@ class AuthController extends GetxController {
 
     DialogConstant.loading(context!, 'Mengirim kode Verifikasi...');
 
-    API.basePost('/auth-sms.php', post, header, true, (result, error) {
+    API.basePost('/api/toko/auth-sms', post, header, true, (result, error) {
       Get.back();
       if (error != null) {
         callback!(null, error);
@@ -216,7 +222,8 @@ class AuthController extends GetxController {
 
     DialogConstant.loading(context!, 'Check Verification...');
 
-    API.basePost('/get-verify-sms.php', post, header, true, (result, error) {
+    API.basePost('/api/toko/get-verify-sms', post, header, true,
+        (result, error) {
       Get.back();
       if (error != null) {
         callback!(null, error);
@@ -236,7 +243,7 @@ class AuthController extends GetxController {
 
     DialogConstant.loading(context!, 'Sending OTP...');
 
-    API.basePost('/auth-sms.php', post, header, true, (result, error) {
+    API.basePost('/api/toko/auth-sms', post, header, true, (result, error) {
       Get.back();
       if (error != null) {
         callback!(null, error);
@@ -275,7 +282,8 @@ class AuthController extends GetxController {
     print(post);
     DialogConstant.loading(context!, 'Verifying OTP..');
 
-    API.basePost('/get-verify-sms.php', post, header, true, (result, error) {
+    API.basePost('/api/toko/get-verify-sms', post, header, true,
+        (result, error) {
       Get.back();
       if (error != null) {
         callback!(null, error);

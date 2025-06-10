@@ -1,5 +1,9 @@
 import 'dart:convert';
 
+import 'package:project_skripsi/screen/gabriel/point_screen/point_cart_screen/point_cart_controller/point_cart_controller.dart';
+import 'package:project_skripsi/screen/gabriel/request_item/request_history_screen/request_history_screen.dart';
+import 'package:project_skripsi/screen/home/landing_home.dart';
+import 'package:project_skripsi/screen/navbar_menu/alamat_screen.dart';
 import 'package:project_skripsi/screen/ocr_ktp/view/home.dart';
 import 'package:get/get.dart';
 
@@ -11,8 +15,13 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 
 class PointCartScreen extends StatefulWidget {
-  const PointCartScreen({Key? key, required this.items}) : super(key: key);
-
+  const PointCartScreen(
+      {super.key,
+      required this.items,
+      this.requestItem = false,
+      this.callback});
+  final Function(dynamic, dynamic)? callback;
+  final bool requestItem;
   final List<dynamic> items;
 
   @override
@@ -25,26 +34,55 @@ class _PointCartScreenState extends State<PointCartScreen> {
   late int point;
   String namaCabang = '';
   bool isChecked = false;
+  late List<Alamat> alamatList;
+  Alamat? selectedAlamat;
 
   @override
   void initState() {
-    getPoint();
-    getCompanName();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadInitialData();
+    });
     super.initState();
   }
 
-  void getPoint() async {
+  Future<void> loadInitialData() async {
+    DialogConstant.loading(context, 'Loading...');
+    await getPoint();
+    await getCompanName();
+    await fetchAlamatList();
+    Get.back();
+  }
+
+  Future<void> fetchAlamatList() async {
+    final username = await LocalData.getData('user');
+    final response = await http.get(
+        Uri.parse('${API.BASE_URL}/api/toko/getAlamat?username=$username'));
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      setState(() {
+        alamatList = data.map((e) => Alamat.fromJson(e)).toList();
+        if (alamatList.isNotEmpty) {
+          selectedAlamat = alamatList.firstWhere((a) => a.isPrimary,
+              orElse: () => alamatList.first);
+        }
+      });
+    } else {
+      alamatList = [];
+    }
+  }
+
+  Future<void> getPoint() async {
     final points = await LocalData.getData('point');
     setState(() {
       point = int.parse(points);
     });
   }
 
-  void getCompanName() async {
+  Future<void> getCompanName() async {
     final compan = await LocalData.getData('compan_code');
     try {
       final response =
-          await http.get(Uri.parse('${API.BASE_URL}/get_compan.php'));
+          await http.get(Uri.parse('${API.BASE_URL}/api/toko/get_compan'));
       if (response.statusCode == 200) {
         // Mengonversi JSON response menjadi List<Map<String, dynamic>>
         List<dynamic> jsonData = json.decode(response.body);
@@ -62,6 +100,71 @@ class _PointCartScreenState extends State<PointCartScreen> {
     }
   }
 
+  Widget buildAlamatDropdown() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<Alamat>(
+          value: selectedAlamat,
+          isExpanded: true,
+          icon: const Icon(Icons.arrow_drop_down),
+          style: const TextStyle(color: Colors.black, fontSize: 14),
+          onChanged: (Alamat? newValue) {
+            setState(() {
+              selectedAlamat = newValue!;
+            });
+          },
+          items: alamatList.map((alamat) {
+            return DropdownMenuItem<Alamat>(
+              value: alamat,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      alamat.label,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Expanded(
+                    child: Text(
+                      alamat.alamat,
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      "${alamat.kota}, ${alamat.provinsi}, ${alamat.kodePos}",
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ),
+                  const Divider(height: 10),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,8 +178,12 @@ class _PointCartScreenState extends State<PointCartScreen> {
               onPressed: () {
                 showAreYouSureDialog(
                     context,
-                    () =>
-                        submitItems(widget.items, totalPriceFinal, isChecked));
+                    () => (widget.requestItem)
+                        ? submitItems(widget.items, totalPriceFinal, isChecked,
+                            selectedAlamat!, widget.requestItem,
+                            callback: widget.callback)
+                        : submitItems(widget.items, totalPriceFinal, isChecked,
+                            selectedAlamat!, widget.requestItem));
               },
               icon: Icon(
                 Icons.check,
@@ -89,6 +196,7 @@ class _PointCartScreenState extends State<PointCartScreen> {
         padding: EdgeInsets.symmetric(horizontal: 16.v, vertical: 10.v),
         child: Column(
           children: [
+            if (isChecked) buildAlamatDropdown(),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -111,50 +219,65 @@ class _PointCartScreenState extends State<PointCartScreen> {
     );
   }
 
-  void submitItems(items, totalPriceFinal, isCheked) async {
+  void submitItems(
+      items, totalPriceFinal, isCheked, Alamat alamat, bool requestItem,
+      {void Function(dynamic, dynamic)? callback}) async {
     if (items.toString().isNotEmpty) {
       DialogConstant.loading(context, 'Transaction on Process...');
 
-      Map<String, dynamic> postTransaction = {
-        'total_amount': totalPriceFinal,
-        'is_delivery': isCheked
-      };
       if (await LocalData.containsKey('detailKTP')) {
-        ShoppingCartController().postTransactions(
-            context: context,
-            callback: (result, error) {
-              if (result != null && result['error'] != true) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    backgroundColor: const Color.fromARGB(88, 0, 0, 0),
-                    content: Row(
-                      children: [
-                        Icon(
-                          Icons.check,
-                          color: Colors.red,
-                        ),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'Transaction Success!!!',
-                            style: TextStyle(
-                              color: Colors.white,
+        if (requestItem) {
+          print(items);
+          API.basePost(
+              '/api/toko/approve_request',
+              {
+                'request_id': items[0]['request_id'],
+                'username': await LocalData.getData('user')
+              },
+              {'Content-Type': 'application/json'},
+              true, (result, error) async {
+            Get.to(RequestHistoryScreen());
+            callback?.call(result, null);
+          });
+        } else {
+          PointCartController().postTransactions(
+              alamat: alamat.alamat,
+              totalAmount: totalPriceFinal,
+              isDelivery: isCheked,
+              context: context,
+              callback: (result, error) {
+                if (result != null && result['error'] != true) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      backgroundColor: const Color.fromARGB(88, 0, 0, 0),
+                      content: Row(
+                        children: [
+                          Icon(
+                            Icons.check,
+                            color: Colors.red,
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Transaction Success!!!',
+                              style: TextStyle(
+                                color: Colors.white,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              } else {
-                DialogConstant.alert(error.toString());
-              }
-              ;
-            },
-            postTransaction: postTransaction,
-            postTransactionDetail: items);
+                  );
+                } else {
+                  DialogConstant.alert(error.toString());
+                }
+                ;
+              },
+              postTransactionDetail: items);
+        }
       } else {
-        Get.to(KtpOCR(postTransaction: postTransaction, postDetail: items));
+        Get.to(KtpOCR(postDetail: items));
       }
     }
   }
@@ -182,7 +305,7 @@ class _PointCartScreenState extends State<PointCartScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Total Price:',
+                Text('Total Point:',
                     style: CustomTextStyle.titleMediumBlack900),
                 Text(currencyFormatter.format(totalPriceFinal),
                     style: CustomTextStyle.titleMediumRed700)
@@ -266,7 +389,8 @@ class _PointCartScreenState extends State<PointCartScreen> {
             item['quantity_selected'] > 0) // Filter where quantity > 0
         .map((item) {
       return {
-        'image': "${API.BASE_URL}/images/${item['image_url']}",
+        'image':
+            "${API.BASE_URL}/img/gambar_produk_tukar_poin/${item['image_url']}",
         'product': item['product_name'],
         'product description': item['product_description'],
         'quantity': item['quantity_selected'],
@@ -308,11 +432,12 @@ class _PointCartScreenState extends State<PointCartScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Image.network(
-              product['image'],
-              width: 50,
-              height: 50,
-            ),
+            if (!widget.requestItem)
+              Image.network(
+                product['image'],
+                width: 50,
+                height: 50,
+              ),
             SizedBox(width: 5.adaptSize),
             Expanded(
               child: Column(

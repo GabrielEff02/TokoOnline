@@ -10,3 +10,5 @@ export 'package:flutter/material.dart';
 export '../data/general_data.dart';
 export 'package:project_skripsi/api/api.dart';
 export 'package:project_skripsi/utils/local_data.dart';
+export 'package:project_skripsi/constant/dialog_constant.dart';
+export 'package:get/get.dart';

@@ -55,7 +55,7 @@ class _CheckoutMainScreenState extends State<CheckoutMainScreen> {
   Future<void> getCompan() async {
     try {
       final response =
-          await http.get(Uri.parse('${API.BASE_URL}/get_compan.php'));
+          await http.get(Uri.parse('${API.BASE_URL}/api/toko/get_compan'));
 
       if (response.statusCode == 200) {
         // Mengonversi JSON response menjadi List<Map<String, dynamic>>
@@ -249,7 +249,8 @@ class _CheckoutMainScreenState extends State<CheckoutMainScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             CustomImageView(
-              imagePath: "${API.BASE_URL}/images/${product['image_url']}",
+              imagePath:
+                  "${API.BASE_URL}/img/gambar_produk_tukar_poin/${product['image_url']}",
               height: 150, // Adjust image height as needed
               width: double.infinity,
               alignment: Alignment.center,

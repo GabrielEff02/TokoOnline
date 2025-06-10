@@ -66,7 +66,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       SplashScreen.notificationData['count'] -= 1;
     });
     API.basePost(
-        '/update_notif.php',
+        '/api/toko/update_notif',
         <String, dynamic>{'id': index},
         <String, String>{'Content-Type': 'application/json'},
         true, (result, error) {

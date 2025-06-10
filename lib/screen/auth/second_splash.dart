@@ -17,7 +17,7 @@ class _SecondSplashState extends State<SecondSplash>
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-    Future.delayed(const Duration(seconds: 1), () {
+    Future.delayed(const Duration(seconds: 3), () {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const LandingHome()),
       );
@@ -38,7 +38,8 @@ class _SecondSplashState extends State<SecondSplash>
       child: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: NetworkImage("${API.BASE_URL}/images/${SplashScreen.path2}"),
+            image: NetworkImage(
+                "${API.BASE_URL}/img/splash/${SplashScreen.path2}"),
             fit: BoxFit.fill,
           ),
         ),

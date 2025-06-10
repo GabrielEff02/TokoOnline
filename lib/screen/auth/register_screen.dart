@@ -51,7 +51,10 @@ class _LoginScreenState extends State<RegisterScreen> {
                     color: Colors.black87),
               ),
               SizedBox(height: 20),
-
+              buildTextField('Name', registercontroller.edtNama, 50,
+                  keyboardType: TextInputType.text,
+                  icon: Icon(Icons.person, color: Colors.yellow)),
+              SizedBox(height: 20),
               // Email Field
               buildTextField('Email', registercontroller.edtEmail, 50,
                   keyboardType: TextInputType.emailAddress,
@@ -133,6 +136,11 @@ class _LoginScreenState extends State<RegisterScreen> {
                 text: 'Daftar',
                 onClick: () {
                   // Validate fields
+                  String nama = registercontroller.edtNama.text;
+                  if (nama.isEmpty) {
+                    DialogConstant.alert('Email tidak boleh kosong');
+                    return;
+                  }
                   String email = registercontroller.edtEmail.text.trim();
                   if (email.isEmpty) {
                     DialogConstant.alert('Email tidak boleh kosong');

@@ -151,7 +151,6 @@ class _SearchProductScreenState extends State<SearchProductScreen> {
                       _searchController.text = item;
                       _saveSearch(item);
                       loadData();
-                      print(_isFocused);
                     },
                   );
                 },
@@ -163,9 +162,9 @@ class _SearchProductScreenState extends State<SearchProductScreen> {
               ? Expanded(
                   child: ListView(
                     children: productRow(productData.where((product) {
-                      final name = product['brg_name'].toString().toLowerCase();
+                      final name = product['nama'].toString().toLowerCase();
                       final desc =
-                          product['brg_deskripsi'].toString().toLowerCase();
+                          product['deskripsi'].toString().toLowerCase();
                       final searchLower = _searchController.text.toLowerCase();
                       return name.contains(searchLower) ||
                           desc.contains(searchLower);
@@ -238,7 +237,7 @@ class _SearchProductScreenState extends State<SearchProductScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             CustomImageView(
-              imagePath: "${API.BASE_URL}/images/gambar_brg/${product['url']}",
+              imagePath: "${API.BASE_URL}/img/gambar_produk/${product['url']}",
               height: 150, // Adjust image height as needed
               width: double.infinity,
               alignment: Alignment.center,
@@ -246,7 +245,7 @@ class _SearchProductScreenState extends State<SearchProductScreen> {
             SizedBox(height: 12), // Space between image and text
             Text(
               maxLines: 2,
-              product['brg_name'], // Product name
+              product['nama'], // Product name
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 18, // Increase font size
@@ -255,7 +254,7 @@ class _SearchProductScreenState extends State<SearchProductScreen> {
             ),
             SizedBox(height: 4), // Space between name and price
             Text(
-              'Rp. ${currencyFormatter.format(product['price'])}', // Product price
+              'Rp. ${currencyFormatter.format(product['harga'])}', // Product price
               style: TextStyle(
                 fontSize: 16, // Font size for price
                 color: Colors.green, // Green color for price
@@ -263,7 +262,7 @@ class _SearchProductScreenState extends State<SearchProductScreen> {
             ),
             SizedBox(height: 4), // Space between price and quantity
             Text(
-              'Quantity: ${product['quantity']} ${product['per']}', // Product quantity
+              'Stock: ${product['quantity']} ${product['satuan']}', // Product quantity
               style: TextStyle(
                 fontSize: 14, // Font size for quantity
                 color: Colors.grey[600], // Grey color for quantity

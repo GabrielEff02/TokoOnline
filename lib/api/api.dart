@@ -10,7 +10,7 @@ class API {
   // static String BASE_URL = 'http://192.168.0.109/e_commerce';
   // static String BASE_URL = 'http://10.0.2.2/e_commerce';
   // static String BASE_URL = 'https://lightz.tiaragatzu.co.id';
-  static String BASE_URL = 'https://modisyst.com/tokoonline/point_app';
+  static String BASE_URL = 'https://tokoonline.modisyst.com';
 
   // static String BASE_URL = 'https://dharmaguna.id/tokool';
 
@@ -24,7 +24,6 @@ class API {
     print("POST Header ${json.encode(headers)}");
     print("POST VALUE ${json.encode(post)}");
     String ada = json.encode(post);
-
     var mapError = new Map();
     try {
       final response = await http
@@ -44,7 +43,6 @@ class API {
         var sdad = response.body;
         var mapJson = json.decode(response.body);
         var dads = jsonEncode(mapJson);
-
         if (responseCode == 200) {
           callback(mapJson, null);
         } else if (responseCode == 401 ||

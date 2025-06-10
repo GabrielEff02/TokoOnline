@@ -12,7 +12,7 @@ class EditProfileController extends GetxController {
 
     header['Content-Type'] = 'application/json';
     DialogConstant.loading(context!, 'Loading...');
-    API.basePost('/update_user.php', post!, header, true, (result, error) {
+    API.basePost('/api/toko/update_user', post!, header, true, (result, error) {
       Get.back();
       if (error != null) {
         callback!(null, error);
