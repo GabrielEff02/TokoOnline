@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1090293137365",
+    "project_id": "ecommerce-4ec3a",
+    "storage_bucket": "ecommerce-4ec3a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1090293137365:android:0660cf604ee3678106475c",
+        "android_client_info": {
+          "package_name": "com.example.project_skripsi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAcmFtZsz6A_UES4yhqYtdjc_2VBuUYZSs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

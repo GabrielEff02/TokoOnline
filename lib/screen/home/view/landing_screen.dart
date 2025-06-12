@@ -130,7 +130,7 @@ class _LandingScreenState extends State<LandingScreen> {
                               ),
                               SizedBox(width: 12),
                               Text(
-                                "Pilih Perusahaan",
+                                "Pilih Cabang",
                                 style: TextStyle(
                                   color: Colors.grey[600],
                                   fontSize: 16,

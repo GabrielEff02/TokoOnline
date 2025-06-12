@@ -1,11 +1,8 @@
 import 'dart:convert';
 
 import 'package:project_skripsi/screen/navbar_menu/alamat_screen.dart';
-import 'package:project_skripsi/screen/ocr_ktp/view/home.dart';
-import 'package:get/get.dart';
 
 import '../../checkouts/shopping_cart_screen/shopping_cart_controller/shopping_cart_controller.dart';
-import '../../../../constant/dialog_constant.dart';
 import '../../core/app_export.dart';
 import 'dart:async';
 import 'package:intl/intl.dart';
@@ -35,6 +32,12 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
     });
     super.initState();
   }
+
+  NumberFormat currencyFormatter = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: '',
+    decimalDigits: 0,
+  );
 
   Future<void> loadInitialData() async {
     DialogConstant.loading(context, 'Loading...');
@@ -86,7 +89,7 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Shopping Cart",
+          "Checkout",
           style: CustomTextStyle.titleLargeBlack900,
         ),
         actions: [
@@ -98,7 +101,7 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
                         widget.items,
                         totalPriceFinal + deliveryPrice,
                         isChecked,
-                        selectedAlamat!));
+                        isChecked ? selectedAlamat!.alamat : ''));
               },
               icon: Icon(
                 Icons.check,
@@ -204,13 +207,13 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
   }
 
   void submitItems(
-      items, num totalPriceFinal, bool isCheked, Alamat alamat) async {
+      items, num totalPriceFinal, bool isCheked, String alamat) async {
     if (items.toString().isNotEmpty) {
       DialogConstant.loading(context, 'Transaction on Process...');
 
       ShoppingCartController().postTransactions(
           totalAmount: totalPriceFinal,
-          alamat: alamat.alamat,
+          alamat: alamat,
           isDelivery: isCheked,
           context: context,
           callback: (result, error) {
@@ -247,12 +250,6 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
   }
 
   Widget _buildStickyBottomSection(BuildContext context) {
-    NumberFormat currencyFormatter = NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: '',
-      decimalDigits: 0,
-    );
-
     return Column(
       children: [
         // Card(
@@ -290,9 +287,18 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
                     Checkbox(
                       value: isChecked,
                       onChanged: (bool? newValue) {
-                        setState(() {
-                          isChecked = newValue ?? false;
-                        });
+                        if (newValue == true) {
+                          if (alamatList.isEmpty) {
+                            showAddressNotFoundDialog(
+                                context, () => Get.to(AlamatScreen()));
+                          } else {
+                            _showDeliveryConfirmation();
+                          }
+                        } else {
+                          setState(() {
+                            isChecked = newValue ?? false;
+                          });
+                        }
                       },
                       activeColor: Colors.blue, // Warna saat checkbox dipilih
                     ),
@@ -314,6 +320,499 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  void showAddressNotFoundDialog(
+      BuildContext context, VoidCallback onRegisterAddress) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          elevation: 8,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: EdgeInsets.zero,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header dengan info icon
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.amber.shade400,
+                        Colors.orange.shade500,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      // Info icon
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.location_off_rounded,
+                          size: 30,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 12),
+                      Center(
+                        child: Text(
+                          'Alamat Tidak Ditemukan',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Content
+                Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      // Address icon
+                      Container(
+                        padding: EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.shade50,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.home_outlined,
+                          size: 24,
+                          color: Colors.orange.shade600,
+                        ),
+                      ),
+
+                      SizedBox(height: 16),
+
+                      // Pesan utama
+                      Text(
+                        'Mohon Maaf',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade800,
+                        ),
+                      ),
+
+                      SizedBox(height: 8),
+
+                      Text(
+                        'Anda tidak memiliki alamat yang sudah terdaftar. Silakan daftarkan alamat terlebih dahulu untuk melanjutkan proses ini.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.grey.shade600,
+                          height: 1.5,
+                        ),
+                      ),
+
+                      SizedBox(height: 24),
+
+                      // Buttons
+                      Row(
+                        children: [
+                          // Tombol Cancel
+                          Expanded(
+                            child: Container(
+                              height: 45,
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                style: TextButton.styleFrom(
+                                  backgroundColor: Colors.grey.shade100,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.cancel_outlined,
+                                      size: 18,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'Batal',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(width: 12),
+
+                          // Tombol Daftar Alamat
+                          Expanded(
+                            child: Container(
+                              height: 45,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Colors.blue.shade400,
+                                    Colors.blue.shade600,
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.blue.withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  onRegisterAddress();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  padding: EdgeInsets.symmetric(horizontal: 8),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.add_location_alt,
+                                      size: 16,
+                                      color: Colors.white,
+                                    ),
+                                    SizedBox(width: 4),
+                                    Flexible(
+                                      child: Text(
+                                        'Daftar Alamat',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showDeliveryConfirmation() {
+    DateTime now = DateTime.now().toUtc().add(Duration(hours: 8));
+    String _formatDate(DateTime date) {
+      List<String> days = [
+        'Minggu',
+        'Senin',
+        'Selasa',
+        'Rabu',
+        'Kamis',
+        'Jumat',
+        'Sabtu'
+      ];
+      List<String> months = [
+        '',
+        'Januari',
+        'Februari',
+        'Maret',
+        'April',
+        'Mei',
+        'Juni',
+        'Juli',
+        'Agustus',
+        'September',
+        'Oktober',
+        'November',
+        'Desember'
+      ];
+
+      String dayName = days[date.weekday % 7];
+      String monthName = months[date.month];
+
+      return '$dayName, ${date.day} $monthName ${date.year}';
+    }
+
+    // Menentukan waktu pengiriman
+    String deliveryMessage;
+    if (now.hour >= 12) {
+      DateTime tomorrow = now.add(Duration(days: 1));
+      deliveryMessage =
+          "Pesanan akan dikirim besok (${_formatDate(tomorrow)}) pada jam 13:00 WIB";
+    } else {
+      // Jika sebelum jam 12 siang, kirim hari ini jam 1 siang
+      deliveryMessage =
+          "Pesanan akan dikirim hari ini (${_formatDate(now)}) pada jam 13:00 WIB";
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Tidak bisa ditutup dengan tap di luar
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          elevation: 8,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: EdgeInsets.zero,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header dengan icon dan background gradient
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.blue.shade400,
+                        Colors.blue.shade600,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      // Icon pengiriman
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.local_shipping,
+                          size: 30,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 12),
+                      Text(
+                        'Konfirmasi Pengiriman',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Content
+                Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade50,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.schedule,
+                          size: 24,
+                          color: Colors.blue.shade600,
+                        ),
+                      ),
+                      SizedBox(height: 24),
+
+                      // Icon waktu
+                      Text(
+                        'Pesanan akan dikenakan biaya kirim sebesar: 10% atau Rp. ${currencyFormatter.format(deliveryPrice)}',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade700,
+                          height: 1.5,
+                        ),
+                      ),
+
+                      SizedBox(height: 16),
+
+                      // Pesan konfirmasi
+                      Text(
+                        deliveryMessage,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade700,
+                          height: 1.5,
+                        ),
+                      ),
+
+                      SizedBox(height: 24),
+
+                      // Buttons
+                      Row(
+                        children: [
+                          // Tombol Batal
+                          Expanded(
+                            child: Container(
+                              height: 45,
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                style: TextButton.styleFrom(
+                                  backgroundColor: Colors.grey.shade100,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Batal',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(width: 12),
+
+                          // Tombol Konfirmasi
+                          Expanded(
+                            child: Container(
+                              height: 45,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Colors.blue.shade400,
+                                    Colors.blue.shade600,
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.blue.withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  setState(() {
+                                    isChecked = true;
+                                  });
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Konfirmasi',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -348,10 +847,10 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
           totalQuantityFinal += product['quantity'];
           totalPriceFinal += product['total price'];
           if (isChecked) {
-            if (deliveryPrice + (product['total price'] * .1) < 20000) {
+            if (deliveryPrice + (product['total price'] * .1) < 10000) {
               deliveryPrice += (product['total price'] * .1);
             } else {
-              deliveryPrice = 20000;
+              deliveryPrice = 10000;
             }
           } else {
             deliveryPrice = 0;
@@ -432,33 +931,228 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
   void showAreYouSureDialog(BuildContext context, VoidCallback onConfirm) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Row(
-            children: [
-              Icon(Icons.warning, color: Colors.red),
-              SizedBox(width: 10),
-              Text("Are you sure?"),
-            ],
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
-          content: Text("Are you sure you want to proceed with this action?"),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: Text("Cancel", style: TextStyle(color: Colors.grey)),
+          elevation: 8,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: EdgeInsets.zero,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
+                ),
+              ],
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-                onConfirm(); // Call the confirmation action
-              },
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 70, 242, 216)),
-              child: Text("Yes"),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header dengan warning icon
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.orange.shade400,
+                        Colors.red.shade500,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      // Warning icon dengan animasi
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.warning_rounded,
+                          size: 30,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 12),
+                      Text(
+                        'Konfirmasi Transaksi',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Content
+                Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      // Question mark icon
+                      Container(
+                        padding: EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.shade50,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.help_outline,
+                          size: 24,
+                          color: Colors.orange.shade600,
+                        ),
+                      ),
+
+                      SizedBox(height: 16),
+
+                      // Pesan konfirmasi
+                      Text(
+                        'Apakah Anda yakin?',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade800,
+                        ),
+                      ),
+
+                      SizedBox(height: 8),
+
+                      Text(
+                        'Apakah Anda yakin ingin melanjutkan transaksi ini? Pastikan semua data sudah benar.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.grey.shade600,
+                          height: 1.5,
+                        ),
+                      ),
+
+                      SizedBox(height: 24),
+
+                      // Buttons
+                      Row(
+                        children: [
+                          // Tombol Cancel
+                          Expanded(
+                            child: Container(
+                              height: 45,
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                style: TextButton.styleFrom(
+                                  backgroundColor: Colors.grey.shade100,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.close,
+                                      size: 18,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'Batal',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(width: 12),
+
+                          // Tombol Ya/Konfirmasi
+                          Expanded(
+                            child: Container(
+                              height: 45,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color(0xFF46F2D8), // Sesuai warna asli
+                                    Color(0xFF2DD4BF),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Color(0xFF46F2D8).withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  onConfirm();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.check,
+                                      size: 18,
+                                      color: Colors.white,
+                                    ),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'Ya',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         );
       },
     );

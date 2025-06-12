@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:project_skripsi/screen/auth/second_splash.dart';
 import 'package:project_skripsi/screen/gabriel/core/app_export.dart';
-import 'package:get/get.dart';
 
 class PointCartController {
   Future<void> postTransactions(
@@ -41,7 +40,7 @@ class PointCartController {
       } else {
         LocalData.saveData('point',
             '${int.parse(await LocalData.getData('point')) - totalAmount!}');
-        final cart = jsonDecode(await LocalData.getData('cart'));
+        final cart = jsonDecode(await LocalData.getData('point_cart'));
         cart.remove(companCode);
         LocalData.saveData('point_cart', jsonEncode(cart));
         Get.back();

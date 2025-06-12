@@ -28,7 +28,7 @@ class _ShowItemsScreenState extends State<ShowItemsScreen> {
   bool checkCompan = false;
   bool checkProduct = false;
 
-  Future<void> checkingCompan() async {
+  Future<void> checkingCompan(bool first) async {
     if (await LocalData.containsKey('compan_code')) {
       final companyCode = await LocalData.getData('compan_code');
       setState(() {
@@ -37,6 +37,8 @@ class _ShowItemsScreenState extends State<ShowItemsScreen> {
     }
     if (selectedCompanyCode.isNotEmpty) {
       checkCompan = true;
+    }
+    if (!first) {
       await loadInitialData();
     }
   }
@@ -53,6 +55,7 @@ class _ShowItemsScreenState extends State<ShowItemsScreen> {
     DialogConstant.loading(context, 'Loading...');
     await getCompan();
     await getFullName();
+    await checkingCompan(true);
     await _sortInitialData();
     Get.back();
   }
@@ -99,7 +102,7 @@ class _ShowItemsScreenState extends State<ShowItemsScreen> {
       final compan = await LocalData.getData('compan_code');
       final listData = await CheckoutsData.getInitData(compan);
       productData = listData['productData'];
-
+      print(compan);
       if (datas.keys.contains(compan)) {
         List<int> uniquePriorityOrder = [];
         for (String data in datas[compan]) {
@@ -123,7 +126,7 @@ class _ShowItemsScreenState extends State<ShowItemsScreen> {
 
             return indexA.compareTo(indexB);
           });
-
+          displayedSemua = {};
           displayedItems = productData.toList();
         });
       } else if (compan == 'semua' || compan.isEmpty) {
@@ -138,6 +141,7 @@ class _ShowItemsScreenState extends State<ShowItemsScreen> {
           }
           uniquePriorityOrder.sort();
           setState(() {
+            displayedItems = [];
             displayedSemua[companKey] = productData
                 .where((product) =>
                     uniquePriorityOrder.contains(product['brg_id']))
@@ -303,7 +307,7 @@ class _ShowItemsScreenState extends State<ShowItemsScreen> {
                               ),
                               const SizedBox(width: 12),
                               const Text(
-                                "Pilih Perusahaan",
+                                "Pilih Cabang",
                                 style: TextStyle(
                                   color: Color(0xFF64748B),
                                   fontSize: 16,
@@ -360,7 +364,7 @@ class _ShowItemsScreenState extends State<ShowItemsScreen> {
                             });
                             LocalData.saveData(
                                 'compan_code', selectedCompanyCode);
-                            checkingCompan();
+                            checkingCompan(false);
                           },
                         ),
                       ),
@@ -373,7 +377,7 @@ class _ShowItemsScreenState extends State<ShowItemsScreen> {
             // Content Area
             Expanded(
               child: checkProduct
-                  ? checkCompan
+                  ? checkCompan && selectedCompanyCode != 'semua'
                       ? Container(
                           margin: const EdgeInsets.only(top: 20),
                           child: Column(
@@ -499,8 +503,8 @@ class _ShowItemsScreenState extends State<ShowItemsScreen> {
       bottomSheet: AnimatedContainer(
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
-        height: totalPrice > 0 ? 100 : 0,
-        child: totalPrice > 0
+        height: totalPrice > 0 && selectedCompanyCode != 'semua' ? 100 : 0,
+        child: totalPrice > 0 && selectedCompanyCode != 'semua'
             ? Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(

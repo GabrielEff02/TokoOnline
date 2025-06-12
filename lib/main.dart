@@ -7,20 +7,20 @@ import 'screen/auth/login_screen.dart';
 import 'screen/gabriel/core/app_export.dart';
 import 'package:flutter/services.dart';
 
-// final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-// final navigatorKey = GlobalKey<NavigatorState>();
-// void getToken() async {
-//   String? token = await _firebaseMessaging.getToken();
-//   print("FCM Token: $token");
-// }
+final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+final navigatorKey = GlobalKey<NavigatorState>();
+void getToken() async {
+  String? token = await _firebaseMessaging.getToken();
+  print("FCM Token: $token");
+}
 
-// 0123456789101
+// 012345678910
 // a12345
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // await Firebase.initializeApp();
-  // await NotificationApi().initNotifications();
+  await Firebase.initializeApp();
+  await NotificationApi().initNotifications();
   runApp(MyApp());
 }
 

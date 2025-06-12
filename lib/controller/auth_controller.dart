@@ -39,6 +39,8 @@ class AuthController extends GetxController {
     } else if (edtPass.text == '') {
       DialogConstant.alert('Password tidak boleh kosong!');
     } else {
+      DialogConstant.loading(context!, 'Loading...');
+
       postLogin(
           context: context,
           callback: (result, error) => callback!(result, error));
@@ -46,8 +48,6 @@ class AuthController extends GetxController {
   }
 
   postLogin({BuildContext? context, void callback(result, exception)?}) {
-    DialogConstant.loading(context!, 'Loading...');
-
     var post = Map<String, dynamic>();
     var header = Map<String, String>();
 

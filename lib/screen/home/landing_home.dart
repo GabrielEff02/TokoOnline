@@ -37,7 +37,7 @@ class _LandingHomeState extends State<LandingHome>
     super.dispose();
   }
 
-  void getLoggedIn() async {
+  Future<void> getLoggedIn() async {
     final data = await LocalData.getDataBool('isLoggedIn');
 
     setState(() {
@@ -144,7 +144,7 @@ class _LandingHomeState extends State<LandingHome>
       LandingHome.wait = true;
     });
     DialogConstant.loading(context, 'Loading...');
-    getLoggedIn();
+    await getLoggedIn();
     _controller = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 200),

@@ -55,7 +55,7 @@ class _ItemScreenState extends State<ItemScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
-          'Product Detail',
+          'Detail Produk',
           style: TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.bold,

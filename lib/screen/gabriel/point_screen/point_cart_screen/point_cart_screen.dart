@@ -179,11 +179,19 @@ class _PointCartScreenState extends State<PointCartScreen> {
                 showAreYouSureDialog(
                     context,
                     () => (widget.requestItem)
-                        ? submitItems(widget.items, totalPriceFinal, isChecked,
-                            selectedAlamat!, widget.requestItem,
+                        ? submitItems(
+                            widget.items,
+                            totalPriceFinal,
+                            isChecked,
+                            isChecked ? selectedAlamat!.alamat : '',
+                            widget.requestItem,
                             callback: widget.callback)
-                        : submitItems(widget.items, totalPriceFinal, isChecked,
-                            selectedAlamat!, widget.requestItem));
+                        : submitItems(
+                            widget.items,
+                            totalPriceFinal,
+                            isChecked,
+                            isChecked ? selectedAlamat!.alamat : '',
+                            widget.requestItem));
               },
               icon: Icon(
                 Icons.check,
@@ -220,7 +228,7 @@ class _PointCartScreenState extends State<PointCartScreen> {
   }
 
   void submitItems(
-      items, totalPriceFinal, isCheked, Alamat alamat, bool requestItem,
+      items, totalPriceFinal, isCheked, String alamat, bool requestItem,
       {void Function(dynamic, dynamic)? callback}) async {
     if (items.toString().isNotEmpty) {
       DialogConstant.loading(context, 'Transaction on Process...');
@@ -236,12 +244,12 @@ class _PointCartScreenState extends State<PointCartScreen> {
               },
               {'Content-Type': 'application/json'},
               true, (result, error) async {
-            Get.to(RequestHistoryScreen());
+            Get.offAll(RequestHistoryScreen());
             callback?.call(result, null);
           });
         } else {
           PointCartController().postTransactions(
-              alamat: alamat.alamat,
+              alamat: alamat,
               totalAmount: totalPriceFinal,
               isDelivery: isCheked,
               context: context,

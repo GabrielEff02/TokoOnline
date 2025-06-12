@@ -1,7 +1,6 @@
-import 'package:project_skripsi/api/api.dart';
 import 'package:project_skripsi/screen/auth/splash_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:project_skripsi/screen/gabriel/core/app_export.dart';
 import '../../screen/home/landing_home.dart';
 
 class SecondSplash extends StatefulWidget {
@@ -18,9 +17,7 @@ class _SecondSplashState extends State<SecondSplash>
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
     Future.delayed(const Duration(seconds: 3), () {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const LandingHome()),
-      );
+      Get.offAll(LandingHome());
     });
   }
 

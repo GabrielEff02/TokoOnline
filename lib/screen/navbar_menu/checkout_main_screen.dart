@@ -109,7 +109,7 @@ class _CheckoutMainScreenState extends State<CheckoutMainScreen> {
         Get.back();
       }, Text('Redeem'), actions: [
         DropdownButton<String>(
-          hint: Text("Pilih Perusahaan"),
+          hint: Text("Pilih Cabang"),
           value: selectedCompanyCode,
           items: companyCode.map((company) {
             return DropdownMenuItem<String>(

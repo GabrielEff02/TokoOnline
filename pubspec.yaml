@@ -60,10 +60,16 @@ dependencies:
   mnc_identifier_ocr:
     git:
       url: https://github.com/GabrielEff02/mnc_identifier_ocr.git
+  connectivity_plus: ^6.1.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png"
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

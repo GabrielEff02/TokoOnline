@@ -30,7 +30,7 @@ class NotificationApi {
 
   Future initLocalNotifications() async {
     const iOS = DarwinInitializationSettings();
-    const android = AndroidInitializationSettings('@drawable/launcher_icon');
+    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const settings = InitializationSettings(android: android, iOS: iOS);
     await _localNotifications.initialize(settings,
         onDidReceiveNotificationResponse: (payload) {
