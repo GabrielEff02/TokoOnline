@@ -15,8 +15,8 @@ android {
         applicationId "com.example.project_skripsi" // Ganti dengan applicationId yang sesuai
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion flutter.targetSdkVersion
-        versionCode flutter.versionCode
-        versionName flutter.versionName
+        versionCode 2002 // Naikkan dari 1 ke lebih tinggi dari 2001
+        versionName "1.1"
         multiDexEnabled true // Jika menggunakan multidex
     }
 

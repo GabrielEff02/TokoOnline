@@ -1,17 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:permission_handler/permission_handler.dart';
 
-import 'package:project_skripsi/screen/gabriel/checkouts/shopping_cart_screen/shopping_cart_screen.dart';
 import 'package:project_skripsi/screen/gabriel/point_screen/show_items_point_screen/show_items_point_screen.dart';
 import 'package:project_skripsi/screen/home/landing_home.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
-import 'package:project_skripsi/api/api.dart';
-import 'package:project_skripsi/constant/dialog_constant.dart';
-import 'package:project_skripsi/screen/auth/splash_screen.dart';
-import 'package:project_skripsi/screen/gabriel/checkouts/shopping_cart_screen/shopping_cart_controller/shopping_cart_controller.dart';
 import 'package:project_skripsi/screen/gabriel/core/app_export.dart';
 import 'package:project_skripsi/screen/ocr_ktp/controller/kecamatan_controller.dart';
 import 'package:project_skripsi/screen/ocr_ktp/controller/kelurahan_controller.dart';
@@ -61,13 +55,14 @@ class _KtpOCRState extends State<KtpOCR> {
   final result = Rxn<OcrResultModel>();
   @override
   void initState() {
-    super.initState();
-
     provinceController = Get.put(ProvinceController());
     cityController = Get.put(CityController());
     kecamatanControl = Get.put(KecamatanController());
     kelurahanControl = Get.put(KelurahanController());
-    _initializeData();
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeData();
+    });
   }
 
   @override
@@ -76,20 +71,17 @@ class _KtpOCRState extends State<KtpOCR> {
   }
 
   void _initializeData() async {
-    if (mounted) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        DialogConstant.loading(context, 'Loading...');
+    DialogConstant.loading(context, 'Loading...');
+
+    var detailKTP = jsonDecode(await LocalData.getData('detailKTP'));
+    if (detailKTP != null && detailKTP.isNotEmpty) {
+      ever(provinceController.provinces, (_) async {
+        if (provinceController.provinces.isNotEmpty) {
+          await fillData();
+        }
       });
-      var detailKTP = jsonDecode(await LocalData.getData('detailKTP'));
-      if (detailKTP != null && detailKTP.isNotEmpty) {
-        ever(provinceController.provinces, (_) async {
-          if (provinceController.provinces.isNotEmpty) {
-            await fillData();
-          }
-        });
-      }
-      Get.back();
     }
+    Get.back();
   }
 
   Future<void> fillData() async {
@@ -143,6 +135,11 @@ class _KtpOCRState extends State<KtpOCR> {
 
   Future<void> scanKtp() async {
     OcrResultModel? res;
+    var status = await Permission.camera.request();
+    if (!status.isGranted) {
+      print("Izin kamera ditolak.");
+      return;
+    }
     try {
       res = await MncIdentifierOcr.startCaptureKtp(
           withFlash: true, cameraOnly: true);
@@ -545,67 +542,67 @@ class _KtpOCRState extends State<KtpOCR> {
     return Column(
       children: [
 //*Mulai Field Scan KTP
-        Obx(
-          () => result.value != null
-              ? Image.file(
-                  File(
-                    result.value!.imagePath.toString(),
-                  ),
-                )
-              : GestureDetector(
-                  onTap: () {
-                    scanKtp();
-                  },
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.adaptSize),
-                    height: 200,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: Colors.grey[300]!,
-                        width: 2.0,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
-                          spreadRadius: 2,
-                          blurRadius: 5,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.white,
-                          Colors.grey[100]!,
-                        ],
-                      ),
-                    ),
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.upload_sharp,
-                          size: 40,
-                          color: Colors.grey,
-                        ),
-                        SizedBox(
-                          height: 12,
-                        ),
-                        Text(
-                          "Unggah KTP Anda disini",
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-        ),
+        // Obx(
+        //   () => result.value != null
+        //       ? Image.file(
+        //           File(
+        //             result.value!.imagePath.toString(),
+        //           ),
+        //         )
+        //       : GestureDetector(
+        //           onTap: () {
+        //             scanKtp();
+        //           },
+        //           child: Container(
+        //             padding: EdgeInsets.symmetric(horizontal: 10.adaptSize),
+        //             height: 200,
+        //             decoration: BoxDecoration(
+        //               borderRadius: BorderRadius.circular(10),
+        //               border: Border.all(
+        //                 color: Colors.grey[300]!,
+        //                 width: 2.0,
+        //               ),
+        //               boxShadow: [
+        //                 BoxShadow(
+        //                   color: Colors.grey.withOpacity(0.5),
+        //                   spreadRadius: 2,
+        //                   blurRadius: 5,
+        //                   offset: const Offset(0, 3),
+        //                 ),
+        //               ],
+        //               gradient: LinearGradient(
+        //                 begin: Alignment.topLeft,
+        //                 end: Alignment.bottomRight,
+        //                 colors: [
+        //                   Colors.white,
+        //                   Colors.grey[100]!,
+        //                 ],
+        //               ),
+        //             ),
+        //             child: const Column(
+        //               mainAxisAlignment: MainAxisAlignment.center,
+        //               children: [
+        //                 Icon(
+        //                   Icons.upload_sharp,
+        //                   size: 40,
+        //                   color: Colors.grey,
+        //                 ),
+        //                 SizedBox(
+        //                   height: 12,
+        //                 ),
+        //                 Text(
+        //                   "Unggah KTP Anda disini",
+        //                   style: TextStyle(
+        //                     color: Colors.grey,
+        //                     fontSize: 16,
+        //                     fontWeight: FontWeight.bold,
+        //                   ),
+        //                 )
+        //               ],
+        //             ),
+        //           ),
+        //         ),
+        // ),
 //*Selesai Unggah KTP
         const SizedBox(
           height: 4,

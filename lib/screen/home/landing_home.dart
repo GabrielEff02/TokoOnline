@@ -1,7 +1,5 @@
-import 'package:http/http.dart';
 import 'package:project_skripsi/NavBar.dart';
 import 'package:project_skripsi/api/notification_api.dart';
-import 'package:project_skripsi/controller/auth_controller.dart';
 import 'package:project_skripsi/screen/auth/login_screen.dart';
 import 'package:project_skripsi/screen/auth/splash_screen.dart';
 import 'package:project_skripsi/screen/gabriel/core/app_export.dart';
@@ -9,7 +7,6 @@ import 'package:project_skripsi/screen/gabriel/notifications/notification_screen
 import 'package:project_skripsi/screen/home/view/landing_screen.dart';
 import 'package:project_skripsi/screen/home/view/search_product_screen.dart';
 import 'package:project_skripsi/screen/home/view/wheel_fortune.dart';
-import 'package:project_skripsi/screen/srg/verify_phone_screen.dart';
 import 'package:project_skripsi/widget/material/button.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -33,7 +30,6 @@ class _LandingHomeState extends State<LandingHome>
   List<Widget> actions = [];
   @override
   void dispose() {
-    controllers.dispose();
     super.dispose();
   }
 

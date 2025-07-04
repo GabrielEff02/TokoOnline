@@ -42,9 +42,8 @@ class _LoginScreenState extends State<LoginScreen> {
         callback: (result, error) async {
           if (result != null && result['error'] != true) {
             if (result['data'][0]['register_confirmation'] == '0') {
-              Get.to(() => VerifyPhoneScreen());
+              Get.offAll(() => VerifyPhoneScreen());
             } else {
-              // Get.offAll(KtpOCR());
               Get.offAll(SplashScreen());
             }
           } else {
@@ -181,11 +180,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           logincontroller.validation(
                               context: context,
                               callback: (result, error) async {
+                                print(result);
+                                print(error);
                                 if (result != null && result['error'] != true) {
                                   if (result['data'][0]
                                           ['register_confirmation'] ==
                                       '0') {
-                                    Get.to(() => VerifyPhoneScreen());
+                                    Get.offAll(() => VerifyPhoneScreen());
                                   } else {
                                     Get.offAll(SplashScreen());
                                   }

@@ -211,7 +211,7 @@ class _SearchProductScreenState extends State<SearchProductScreen> {
     NumberFormat currencyFormatter =
         NumberFormat.currency(locale: 'id_ID', symbol: '', decimalDigits: 0);
     return Container(
-      height: 300,
+      height: 350,
       padding: EdgeInsets.all(16.0),
       decoration: BoxDecoration(
         color: Colors.white,

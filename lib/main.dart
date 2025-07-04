@@ -1,9 +1,7 @@
 import 'package:project_skripsi/api/notification_api.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:get/get.dart';
 import 'package:project_skripsi/screen/auth/splash_screen.dart';
-import 'screen/auth/login_screen.dart';
 import 'screen/gabriel/core/app_export.dart';
 import 'package:flutter/services.dart';
 

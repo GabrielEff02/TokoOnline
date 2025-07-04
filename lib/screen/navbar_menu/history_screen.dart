@@ -3,7 +3,6 @@ import 'package:project_skripsi/screen/gabriel/core/app_export.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:flutter/services.dart';
 
 class HistoryScreen extends StatefulWidget {
   @override
@@ -35,10 +34,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
       final response = await http.get(Uri.parse(apiUrl));
 
       if (response.statusCode == 200) {
-        List<dynamic> data = json.decode(response.body);
-
+        Map<String, dynamic> data = json.decode(response.body);
+        final List<Map<String, dynamic>> transactionsData =
+            List<Map<String, dynamic>>.from(data['data']);
         setState(() {
-          transactions = data.map((item) {
+          transactions = transactionsData.map((item) {
             return {
               "transaction_id": item["transaction_id"],
               "date": item["transaction_date"],
@@ -177,7 +177,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget _buildTransactionCard(Map<String, dynamic> transaction, int index) {
     String status = transaction['status'];
     String isDelivery = transaction['is_delivery'];
-    print(transaction);
     return Card(
       margin: EdgeInsets.only(bottom: 16),
       elevation: 3,

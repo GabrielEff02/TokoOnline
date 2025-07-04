@@ -39,7 +39,7 @@ class CheckoutsData {
         compan_code = 'all';
       }
     }
-
+    print("$db/data?username=$username&compan_code=$compan_code");
     try {
       final response = await http.get(
           Uri.parse("$db/data?username=$username&compan_code=$compan_code"));

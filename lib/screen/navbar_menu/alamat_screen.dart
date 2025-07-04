@@ -217,7 +217,10 @@ class _AlamatScreenState extends State<AlamatScreen> {
               ),
             ),
             const SizedBox(width: 12),
-            const Text('Konfirmasi Hapus'),
+            const Text(
+              'Konfirmasi Hapus',
+              style: TextStyle(fontSize: 12),
+            ),
           ],
         ),
         content: const Text('Apakah Anda yakin ingin menghapus alamat ini?'),

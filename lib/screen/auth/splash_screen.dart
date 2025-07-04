@@ -76,7 +76,10 @@ class _SplashScreenState extends State<SplashScreen> {
             children: [
               Icon(Icons.wifi_off, color: Colors.red),
               SizedBox(width: 10),
-              Text('Tidak Ada Koneksi Internet'),
+              Text(
+                'Tidak Ada Koneksi Internet',
+                maxLines: 2,
+              ),
             ],
           ),
           content: const Text(
@@ -151,6 +154,8 @@ class _SplashScreenState extends State<SplashScreen> {
             }
           },
         );
+      } else {
+        Get.to(SecondSplash());
       }
       setState(() {
         _isLoading = false;

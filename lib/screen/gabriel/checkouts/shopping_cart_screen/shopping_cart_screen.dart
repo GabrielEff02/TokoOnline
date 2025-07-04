@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:app_links/app_links.dart';
 import 'package:project_skripsi/screen/navbar_menu/alamat_screen.dart';
 
 import '../../checkouts/shopping_cart_screen/shopping_cart_controller/shopping_cart_controller.dart';
@@ -18,6 +19,7 @@ class ShoppingCartScreen extends StatefulWidget {
 }
 
 class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
+  late final AppLinks _appLinks;
   late num totalQuantityFinal = 0;
   late num totalPriceFinal = 0;
   String namaCabang = '';
@@ -33,6 +35,25 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
     super.initState();
   }
 
+  Future<void> _initDeepLinkListener() async {
+    _appLinks = AppLinks();
+    final uri = await _appLinks.getInitialAppLink();
+    if (uri != null) handlePaymentCallback(uri);
+
+    _appLinks.uriLinkStream.listen((uri) {
+      handlePaymentCallback(uri);
+    });
+  }
+
+  void handlePaymentCallback(Uri uri) async {
+    if (uri.toString().contains('payment-success')) {
+      final controller = ShoppingCartController();
+      await controller.submitPendingTransaction();
+    } else if (uri.toString().contains('payment-error')) {
+      print('❌ Pembayaran gagal');
+    }
+  }
+
   NumberFormat currencyFormatter = NumberFormat.currency(
     locale: 'id_ID',
     symbol: '',
@@ -42,6 +63,8 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
   Future<void> loadInitialData() async {
     DialogConstant.loading(context, 'Loading...');
     await getCompanName();
+    await _initDeepLinkListener();
+
     await fetchAlamatList();
     Get.back();
   }
@@ -215,7 +238,6 @@ class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
           totalAmount: totalPriceFinal,
           alamat: alamat,
           isDelivery: isCheked,
-          context: context,
           callback: (result, error) {
             if (result != null && result['error'] != true) {
               ScaffoldMessenger.of(context).showSnackBar(

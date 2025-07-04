@@ -68,17 +68,19 @@ class AuthController extends GetxController {
       }
     });
     API.basePost('/api/toko/login', post, header, true, (result, error) {
+      print(result);
+      print(error);
       if (!isCompleted) {
         isCompleted = true;
+        if (error != null && error['error'] == true) {
+          Get.back();
 
+          callback!(null, error['message']);
+          return;
+        }
         if (result != null) {
+          Get.back();
           Future.delayed(Duration(seconds: 3), () {
-            if (result['error'] == true) {
-              Get.back();
-
-              callback!(null, result['message']);
-              return;
-            }
             List dataUser = result['data'];
             if (dataUser.length > 1) {
               LocalData.saveData('detailKTP', jsonEncode(dataUser[1]));
